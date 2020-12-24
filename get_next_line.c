@@ -1,13 +1,6 @@
-/*   By: jwasp <jwasp@student.42.fr>                +#+  +:+       +#+        */
- /*                                                +#+#+#+#+#+   +#+           */
- /*   Created: 2020/12/18 15:18:00 by jwasp             #+#    #+#             */
- /*   Updated: 2020/12/21 20:01:13 by jwasp            ###   ########.fr       */
- /*   Updated: 2020/12/21 22:45:37 by jwasp            ###   ########.fr       */
- /*                                                                            */
- /* ************************************************************************** */
 
 #include "get_next_line.h"
-#include <fcntl.h>
+#include <fcntl.h>  // heios: must be <unistd.h> // see `man read` 
 
 char	*save_before_n(char *str)
 {
@@ -31,6 +24,7 @@ char	*save_before_n(char *str)
 	res[i] = '\0';
 	return (res);
 }
+
 char	*pointer_after_n(char *buffer)
 {
 	size_t	i;
@@ -45,11 +39,33 @@ char	*pointer_after_n(char *buffer)
 	}
 	return (buffer + i); //вернет на конец буффера
 }
+
 int		free_str(char *str)
 {
 	free (str);
 	return (-1);
 }
+int get_next_line_cleanup(char* ptr1, char* ptr2)
+{
+  free(ptr1);
+  free(ptr2);
+  return (-1);
+}
+
+// ft_strchr("abcdef", 'd') -> "def"
+char*	ft_strchr(char *str, int ch)
+{
+    if (!str)
+        return (NULL);
+    while (*str != '\0')
+    {
+        if (*str == ch)
+            return (str);
+		str++;
+    }
+    return (NULL);
+}
+
 int		get_next_line(int fd, char **line)
 {
 	char			buffer[BUFFER_SIZE + 1];
@@ -57,79 +73,119 @@ int		get_next_line(int fd, char **line)
 	int				reader;
 	char			*tmp;
 
-	if (fd < 0 || BUFFER_SIZE <= 0 || !line || (!(*line = (char *)malloc(1))))
-		return (-1);
-	**line = '\0';
-	if (remain && find_n(remain))
+	if (!line) 
+        return (-1);
+  
+	if (ft_strchr(remain, '\n'))
 	{
-		*line = save_before_n(remain);
-		remain = ft_strdup(pointer_after_n(remain));
-		free(*line);
 		if (!(*line = save_before_n(remain)))
-			return (free_str(remain));
-		tmp = remain;
+           return (get_next_line_cleanup(remain, *line));
+        tmp = remain;
 		if (!(remain = ft_strdup(pointer_after_n(remain))))
-			return (free_str(tmp));
-		free(tmp);
+           return (get_next_line_cleanup(tmp, *line));
+      	free(tmp);
 		return (1);
 	}
-	if (!remain)
-		if (!(remain = ft_strdup("")))
-			return (free_str(remain));
 	while ((reader = read(fd, buffer, BUFFER_SIZE)) > 0)
 	{
 		buffer[reader] = '\0';
-		if (find_n(buffer))
+		if (ft_strchr(buffer, '\n'))
 		{
-			remain = save_before_n(buffer);
-			*line = ft_strjoin("", remain);
-			free(remain);
-			remain = ft_strdup(pointer_after_n(buffer));
-			if (!(remain = save_before_n(buffer)))
-				return (-1);
-			//free(*line);
-			if (!(*line = ft_strjoin("", remain)))
-				return (free_str(remain));
-			free(remain);
-			if (!(remain = ft_strdup(pointer_after_n(buffer))))
-				return (-1);
-			break ;
+			// buffer: "some line\nmore data"
+			//                   ^
+			//                   \0
+			*(ft_strchr(buffer, '\n')) = '\0';
+            if (!(*line = ft_strjoin(remain ? remain : "", buffer)))
+                return(get_next_line_cleanup(remain, NULL));
+            
+          	tmp = remain;
+			//                                 char*
+			//                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+			//                       char*  +       size_t     + int
+			//                       ~~~~~~   ~~~~~~~~~~~~~~~~~  ~~~
+			if (!(remain = ft_strdup(buffer + ft_strlen(buffer) + 1)))
+           	   	return (get_next_line_cleanup(tmp, *line));
+            free(tmp);
+            
+            return (1);
 		}
-		remain = ft_strjoin(remain, buffer);
-		tmp = remain;
-		if (!(remain = ft_strjoin(remain, buffer)))
-			return (-1);
-		free(tmp);
-		tmp = NULL;
+      	tmp = remain;
+		if (!(remain = ft_strjoin(remain ? remain : "", buffer)))
+          	return (get_next_line_cleanup(tmp, *line));
+      	free(tmp);
 	}
-	if (reader == -1 || reader == 0)
+	if (reader == 0)
 	{
- 		if (reader == -1)
- 			free(*line);
- 		free(remain);
- 		remain = NULL;
- 		return (0);
- 	}
-	return (1);
+		*line = remain;
+		remain = NULL;
+		return (0);
+	}
+	free(remain);
+	return (-1);
 }
-int	main(void)
+
+// char	*line = 1;
+//
+// 		empty.txt - ""
+// get_next_line(fd, &line) -> line = <undefined>, return 0
+// get_next_line(fd, &line) -> line = <undefined>, return 0
+//
+//		one_new_line.txt: "\n"
+// get_next_line(fd, &line) -> line = "", return 1
+// get_next_line(fd, &line) -> line = <undefined>, return 0
+//
+//		cheeky_two_lines.txt: "\nsomeline"
+// get_next_line(fd, &line) -> line = "", return 1
+// get_next_line(fd, &line) -> line = "someline", return 1
+// get_next_line(fd, &line) -> line = <undefined>, return 0
+//
+//		one_word.txt: "Hello\n"
+//                     ^^^^^^
+//                     read(fd, buffer, 7)
+// get_next_line(fd, &line) -> line = "Hello", return 1
+// get_next_line(fd, &line) -> line = "", return 0
+// get_next_line(fd, &line) -> line = "", return 0
+//
+// 		one_line.txt - "just one line\n"
+// get_next_line(fd, &line) -> line = "just one line", return 0
+// get_next_line(fd, &line) -> line = <undefined>, return 0
+//
+// 		file: "First line.\nSecond line.\nThird line.\n"
+// get_next_line(fd, &line) -> line = "First line.", i = 1
+// get_next_line(fd, &line) -> line = "Second line.", i = 1
+// get_next_line(fd, &line) -> line = "Third line.", i = 1
+// get_next_line(fd, &line) -> line = <undefined>, i = 0
+//
+//
+
+int	main(int ac, char**av)
 {
+    // av: [*, *, NULL]
+	//         
+	//       ./a.out
+	//            
+	//             first argument  
 	char	*line;
 	//int		fd = open("Martin_Eden.txt", O_RDONLY);
-	int		fd = open("fill.txt", O_RDONLY);
-	int		i;
-	int		c = 0;
+	int		fd = open(ac > 1 ? *(av+1) : "/etc/cups/printers.conf.O", O_RDONLY);
+	int		status;
+    
+	printf("fd = %d\n", fd);
 
-	while ((i = get_next_line(fd, &line)) && c < 30)
+	while ((status = get_next_line(fd, &line)) == 1)
 	{
-		printf("i = %d %s\n\n", i, line);
+		printf("status = %d %s\n\n", status, line);
 		free(line);
-		c++;
 	}
-	printf("i = %d %s\n", i, line);
-	free(line);
-	line = NULL;
 
 	//sleep(50);
 	return (0);
 }
+
+//*(ft_strchr(buffer, '\n')) = '\0';
+//  ~~~~~~~~~~~~~~~~~~~~~~~
+//           char*
+// char* ptr = buffer;
+// ptr++;
+// if (*ptr == '1') {...}
+// *ptr = 'b';
