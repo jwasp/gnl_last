@@ -1,6 +1,6 @@
 
 #include "get_next_line.h"
-#include <fcntl.h>  // heios: must be <unistd.h> // see `man read` 
+#include <fcntl.h>  // must be <unistd.h>, see `man read` 
 
 char	*save_before_n(char *str)
 {
@@ -99,10 +99,6 @@ int		get_next_line(int fd, char **line)
                 return(get_next_line_cleanup(remain, NULL));
             
           	tmp = remain;
-			//                                 char*
-			//                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-			//                       char*  +       size_t     + int
-			//                       ~~~~~~   ~~~~~~~~~~~~~~~~~  ~~~
 			if (!(remain = ft_strdup(buffer + ft_strlen(buffer) + 1)))
            	   	return (get_next_line_cleanup(tmp, *line));
             free(tmp);
@@ -114,11 +110,12 @@ int		get_next_line(int fd, char **line)
           	return (get_next_line_cleanup(tmp, *line));
       	free(tmp);
 	}
+	// printf("reader = %d remain = |%s|\n", reader, remain ? remain : "");
 	if (reader == 0)
 	{
 		*line = remain;
 		remain = NULL;
-		return (0);
+		return (*line ? 1 : 0);
 	}
 	free(remain);
 	return (-1);
@@ -158,29 +155,40 @@ int		get_next_line(int fd, char **line)
 //
 //
 
-int	main(int ac, char**av)
+int	main(int argc, char**argv)
 {
-    // av: [*, *, NULL]
-	//         
-	//       ./a.out
-	//            
-	//             first argument  
 	char	*line;
-	//int		fd = open("Martin_Eden.txt", O_RDONLY);
-	int		fd = open(ac > 1 ? *(av+1) : "/etc/cups/printers.conf.O", O_RDONLY);
+	int		fd = argc > 1 ? open(argv[1], O_RDONLY) : 0;
 	int		status;
     
 	printf("fd = %d\n", fd);
 
 	while ((status = get_next_line(fd, &line)) == 1)
 	{
-		printf("status = %d %s\n\n", status, line);
+		printf("status = %d, line: \"%s\"\n", status, line);
 		free(line);
 	}
+	printf("status = %d\n", status);
 
-	//sleep(50);
 	return (0);
 }
+
+
+// argv: [*, *, NULL]
+//        \  \.
+//       ./a.out
+//             \.
+//             first argument  
+
+// 0 -- stdin (данные, которые вводим в консоль)
+// 1 -- stdout (что печатет и выводит на экран)
+// 2 -- stderr (тоже печатается на экран, но сообщает об ошибке)
+
+// char* ptr;
+// *ptr == ptr[0]
+// ptr[index] --- *(ptr + index)
+// index[ptr] --- *(index + ptr)
+// *(argv+1) = argv[1]
 
 //*(ft_strchr(buffer, '\n')) = '\0';
 //  ~~~~~~~~~~~~~~~~~~~~~~~
