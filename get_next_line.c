@@ -66,6 +66,30 @@ char*	ft_strchr(char *str, int ch)
 	return (NULL);
 }
 
+
+char	*extract_first_line(char **remain)
+{
+	char	*res;
+	char	*tmp;
+	if (ft_strchr(*remain, '\n'))
+	{
+		if (!(res = save_before_n(*remain)))
+			return (NULL);
+		tmp = *remain;
+		if (!(*remain = ft_strdup(pointer_after_n(tmp))))
+		{
+			free(res);
+			*remain = tmp;
+			return (NULL);
+		}
+		free(tmp);
+		return (res);
+	}
+	res = *remain;
+	*remain = NULL;
+	return (res);
+}
+
 int		get_next_line(int fd, char **line)
 {
 	char			buffer[BUFFER_SIZE + 1];
@@ -75,8 +99,6 @@ int		get_next_line(int fd, char **line)
 
 	if (!line) 
 		return (-1);
-
-	// 
 
 	if (ft_strchr(remain, '\n'))
 	{
@@ -91,8 +113,6 @@ int		get_next_line(int fd, char **line)
 	while ((reader = read(fd, buffer, BUFFER_SIZE)) > 0)
 	{
 		buffer[reader] = '\0';
-		// remain = remain |+| buffer
-		// 
 		if (ft_strchr(buffer, '\n'))
 		{
 			*(ft_strchr(buffer, '\n')) = '\0';
@@ -111,7 +131,6 @@ int		get_next_line(int fd, char **line)
 			return (get_next_line_cleanup(tmp, *line));
 		free(tmp);
 	}
-	// printf("reader = %d remain = |%s|\n", reader, remain ? remain : "");
 	if (reader == 0)
 	{
 		*line = remain;
