@@ -25,26 +25,6 @@ char	*save_before_n(char *str)
 	return (res);
 }
 
-char	*pointer_after_n(char *buffer)
-{
-	size_t	i;
-	i = 0;
-	if (!buffer)
-		return (0);
-	while (buffer[i] != '\0')
-	{
-		if (buffer[i] == 10)
-			return (buffer + i + 1); //AAA\nBBB\nCCCC\n -> B
-		i++;
-	}
-	return (buffer + i); //вернет на конец буффера
-}
-
-int		free_str(char *str)
-{
-	free (str);
-	return (-1);
-}
 int get_next_line_cleanup(char* ptr1, char* ptr2)
 {
 	free(ptr1);
@@ -66,29 +46,31 @@ char*	ft_strchr(char *str, int ch)
 	return (NULL);
 }
 
-
 char	*extract_first_line(char **remain)
 {
 	char	*res;
 	char	*tmp;
-	if (ft_strchr(*remain, '\n'))
+	if ( *remain == NULL || (!ft_strchr(*remain, '\n') || (*(ft_strchr(*remain, '\n') + 1) == '\0')))
 	{
-		if (!(res = save_before_n(*remain)))
-			return (NULL);
-		tmp = *remain;
-		if (!(*remain = ft_strdup(pointer_after_n(tmp))))
-		{
-			free(res);
-			*remain = tmp;
-			return (NULL);
-		}
-		free(tmp);
+		res = *remain;
+		*remain = NULL;
 		return (res);
 	}
-	res = *remain;
-	*remain = NULL;
+	if (!(res = save_before_n(*remain)))
+		return (NULL);
+	tmp = *remain;
+	if (!(*remain = ft_strdup(ft_strchr(tmp, '\n') + 1)))
+	{
+		free(res);
+		*remain = tmp;
+		return (NULL);
+	}
+	free(tmp);
 	return (res);
 }
+
+
+
 
 int		get_next_line(int fd, char **line)
 {
@@ -99,40 +81,27 @@ int		get_next_line(int fd, char **line)
 
 	if (!line) 
 		return (-1);
-
 	if (ft_strchr(remain, '\n'))
-	{
-		if (!(*line = save_before_n(remain)))
-			return (get_next_line_cleanup(remain, *line));
-		tmp = remain;
-		if (!(remain = ft_strdup(pointer_after_n(remain))))
-			return (get_next_line_cleanup(tmp, *line));
-		free(tmp);
-		return (1);
-	}
+		return ((*line = extract_first_line(&remain)) ? 1 : -1);
 	while ((reader = read(fd, buffer, BUFFER_SIZE)) > 0)
 	{
 		buffer[reader] = '\0';
-		if (ft_strchr(buffer, '\n'))
-		{
-			*(ft_strchr(buffer, '\n')) = '\0';
-			if (!(*line = ft_strjoin(remain ? remain : "", buffer)))
-				return(get_next_line_cleanup(remain, NULL));
-			
-			tmp = remain;
-			if (!(remain = ft_strdup(buffer + ft_strlen(buffer) + 1)))
-				return (get_next_line_cleanup(tmp, *line));
-			free(tmp);
-			
-			return (1);
-		}
 		tmp = remain;
 		if (!(remain = ft_strjoin(remain ? remain : "", buffer)))
 			return (get_next_line_cleanup(tmp, *line));
 		free(tmp);
+		printf("remain = |%s|\n", remain);
+		if (ft_strchr (remain, '\n'))
+			return ((*line = extract_first_line(&remain)) ? 1 : -1);
 	}
 	if (reader == 0)
 	{
+		if (remain && *remain == '\0')
+		{
+			free(remain);
+			remain = NULL;
+			return (0);
+		}
 		*line = remain;
 		remain = NULL;
 		return (*line ? 1 : 0);
@@ -146,6 +115,7 @@ int	main(int argc, char**argv)
 	char	*line;
 	int		fd = argc > 1 ? open(argv[1], O_RDONLY) : 0;
 	int		status;
+	char buff[1024];
 	
 	printf("fd = %d\n", fd);
 
@@ -183,3 +153,6 @@ int	main(int argc, char**argv)
 // ptr++;
 // if (*ptr == '1') {...}
 // *ptr = 'b';
+
+// char* + int -> char*
+// int + char* -> char*
