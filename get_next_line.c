@@ -9,11 +9,11 @@ char	*save_before_n(char *str)
 
 	i = 0;
 	if (!str)
-		return (0);
+		return (NULL);
 	while (str[i] && str[i] != '\n')
 		i++;
 	if (!(res = (char *)malloc(sizeof(char) * (i + 1))))
-		return (0);
+		return (NULL);
 
 	i = 0;
 	while (str[i] && str[i] != '\n')
@@ -52,7 +52,8 @@ char	*extract_first_line(char **remain)
 	char	*tmp;
 	if ( *remain == NULL || (!ft_strchr(*remain, '\n') || (*(ft_strchr(*remain, '\n') + 1) == '\0')))
 	{
-		res = *remain;
+		res = save_before_n(*remain);
+		free(*remain);
 		*remain = NULL;
 		return (res);
 	}
@@ -69,15 +70,19 @@ char	*extract_first_line(char **remain)
 	return (res);
 }
 
-
-
+char	*join_and_always_free_first(char *str1, char *str2)
+{
+	char	*res;
+	res = ft_strjoin(str1 ? str1 : "", str2 ? str2 : "");
+	free(str1);
+	return (res);
+}
 
 int		get_next_line(int fd, char **line)
 {
 	char			buffer[BUFFER_SIZE + 1];
 	static	char	*remain = NULL;
 	int				reader;
-	char			*tmp;
 
 	if (!line) 
 		return (-1);
@@ -86,22 +91,13 @@ int		get_next_line(int fd, char **line)
 	while ((reader = read(fd, buffer, BUFFER_SIZE)) > 0)
 	{
 		buffer[reader] = '\0';
-		tmp = remain;
-		if (!(remain = ft_strjoin(remain ? remain : "", buffer)))
-			return (get_next_line_cleanup(tmp, *line));
-		free(tmp);
-		printf("remain = |%s|\n", remain);
+		if (!(remain = join_and_always_free_first(remain, buffer)))
+			return (-1);
 		if (ft_strchr (remain, '\n'))
 			return ((*line = extract_first_line(&remain)) ? 1 : -1);
 	}
 	if (reader == 0)
 	{
-		if (remain && *remain == '\0')
-		{
-			free(remain);
-			remain = NULL;
-			return (0);
-		}
 		*line = remain;
 		remain = NULL;
 		return (*line ? 1 : 0);
@@ -117,6 +113,7 @@ int	main(int argc, char**argv)
 	int		status;
 	char buff[1024];
 	
+	printf ("argv 1 = %s\n", argv[1]);
 	printf("fd = %d\n", fd);
 
 	while ((status = get_next_line(fd, &line)) == 1)
@@ -125,7 +122,7 @@ int	main(int argc, char**argv)
 		free(line);
 	}
 	printf("status = %d\n", status);
-
+	close(fd);
 	return (0);
 }
 
@@ -156,3 +153,53 @@ int	main(int argc, char**argv)
 
 // char* + int -> char*
 // int + char* -> char*
+
+
+////////////////////////////////////////////////
+/// About pointers:
+// [0, 1, ..., rmn, (char*)rmn + 1, ...]
+// [0, 1, ..., rmn, ..., rmn2, ..., ]
+// "Some very. Long string with word"
+//  ^        ^
+// ptr  end_of_sentence
+// 
+// end_of_sentence - ptr
+// 
+// [----------------------]
+//  ^   ^          
+//     ^   ^
+// 1234567
+// 123
+// 1124567
+// int *ptr;
+// ptr++; // ptr += sizeof(int);
+
+// char *rmn;
+// rmn //сам указатель 
+// char *rmn;
+// *rmn; //значение под адресом разыменование 
+// char dest;
+
+// dest = *rmn;
+
+// int *num;
+// int *rmn;
+// int *sum;
+
+// sum = *num + *rmn;
+//       ~~~~   ~~~~
+//       int     int
+
+//&rmn; //адрес значения // address of `rmn`
+////////////////////////////////////////////////
+
+
+////////////////////////////////////////
+//                                                                                   res   tmp
+// stack: [main|local vars|get_next_line|local vars get next line|extract_first_line|buffer[]char*|char*| ]
+//                                                                                   ^           ^
+//                                                                                           <- SP
+// res = 77; // 
+// 55   | mov 77, (SP - 16)  
+// stack: [main|local vars|get_next_line|local vars get next line|]
+/////////////////////////////////////////
