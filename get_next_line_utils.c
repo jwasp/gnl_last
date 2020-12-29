@@ -67,19 +67,15 @@ char	*ft_strdup(const char *src)
  	dest[i] = '\0';
  	return (dest);
  }
-
- int	find_n(char *str)
- {
- 	size_t	i;
-
- 	i = 0;
- 	if (!str)
- 		return (0);
- 	while (str[i] != '\0')
- 	{
- 		if (str[i] == 10)
- 			return (1);
- 		i++;
- 	}
- 	return (0);
- }
+ char*	ft_strchr(char *str, int ch)
+{
+	if (!str)
+		return (NULL);
+	while (*str != '\0')
+	{
+		if (*str == ch)
+			return (str);
+		str++;
+	}
+	return (NULL);
+}

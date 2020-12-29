@@ -23,6 +23,7 @@
  size_t	ft_strlen(const char *str);
  char	*ft_strjoin(char const *s1, char const *s2);
  char	*ft_strdup(const char *src);
+ char*	ft_strchr(char *str, int ch);
  int	find_n(char *str);
  int		get_next_line(int fd, char **line);
 

@@ -1,3 +1,4 @@
+
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
@@ -35,31 +36,17 @@ char	*save_before_n(char *str)
 	return (res);
 }
 
-int get_next_line_cleanup(char* ptr1, char* ptr2)
-{
-	free(ptr1);
-	free(ptr2);
-	return (-1);
-}
-
-char*	ft_strchr(char *str, int ch)
-{
-	if (!str)
-		return (NULL);
-	while (*str != '\0')
-	{
-		if (*str == ch)
-			return (str);
-		str++;
-	}
-	return (NULL);
-}
 
 char	*extract_first_line(char **remain)
 {
 	char	*res;
 	char	*tmp;
-	if ( *remain == NULL || (!ft_strchr(*remain, '\n') || (*(ft_strchr(*remain, '\n') + 1) == '\0')))
+	if (*remain == NULL)
+	{
+		res = ft_strdup("");
+		return (res);
+	}
+	if ((!ft_strchr(*remain, '\n') || (*(ft_strchr(*remain, '\n') + 1) == '\0')))
 	{
 		res = save_before_n(*remain);
 		free(*remain);
@@ -78,6 +65,25 @@ char	*extract_first_line(char **remain)
 	free(tmp);
 	return (res);
 }
+int		check_reader(char **line, char **remain, int reader)
+{
+	if (reader < 0)
+	{
+		free(*remain);
+		return (-1);
+	}
+	if (reader == 0)
+	{
+		if (!(*line = extract_first_line(remain)))
+		{
+			free(*remain);
+			return (-1);
+		}
+		if (!*remain)
+			return (0);
+	}
+	return ((*line = extract_first_line(remain)) ? 1 : -1);	
+}
 
 char	*join_and_always_free_first(char *str1, char *str2)
 {
@@ -92,27 +98,19 @@ int		get_next_line(int fd, char **line)
 	char			buffer[BUFFER_SIZE + 1];
 	static	char	*remain = NULL;
 	int				reader;
+	int				flag;
 
-	//BUFFER_SIZE < 1 || fd < 0
-
-	if (!line)
+	if (!line || BUFFER_SIZE < 1 || fd < 0)
 		return (-1);
-	if (ft_strchr(remain, '\n'))
-		return ((*line = extract_first_line(&remain)) ? 1 : -1);
+	flag = 0;
 	while ((reader = read(fd, buffer, BUFFER_SIZE)) > 0)
 	{
 		buffer[reader] = '\0';
 		if (!(remain = join_and_always_free_first(remain, buffer)))
 			return (-1);
-		if (ft_strchr (remain, '\n'))
-			return ((*line = extract_first_line(&remain)) ? 1 : -1);
+		if (flag == 1)
+			break;
+		flag = ((ft_strchr(remain, '\n')) ? 1 : 0);
 	}
-	if (reader == 0)
-	{
-		*line = remain;
-		remain = NULL;
-		return (*line ? 1 : 0);
-	}
-	free(remain);
-	return (-1);
+	return (check_reader(line, &remain, reader));
 }
