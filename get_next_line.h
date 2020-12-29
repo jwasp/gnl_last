@@ -6,7 +6,7 @@
 /*   By: jwasp <jwasp@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/12/18 15:17:55 by jwasp             #+#    #+#             */
-/*   Updated: 2020/12/22 04:33:30 by jwasp            ###   ########.fr       */
+/*   Updated: 2020/12/29 18:58:33 by jwasp            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,9 +19,12 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <stdio.h>
+#include <fcntl.h>
  size_t	ft_strlen(const char *str);
  char	*ft_strjoin(char const *s1, char const *s2);
  char	*ft_strdup(const char *src);
  int	find_n(char *str);
+ int		get_next_line(int fd, char **line);
+
 
  #endif
