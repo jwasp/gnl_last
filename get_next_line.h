@@ -6,7 +6,7 @@
 /*   By: jwasp <jwasp@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/12/18 15:17:55 by jwasp             #+#    #+#             */
-/*   Updated: 2020/12/29 18:58:33 by jwasp            ###   ########.fr       */
+/*   Updated: 2020/12/30 18:06:45 by jwasp            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 #ifndef GET_NEXT_LINE_H
 #define GET_NEXT_LINE_H
 #ifndef BUFFER_SIZE
-#define BUFFER_SIZE (4*1024)
+#define BUFFER_SIZE 16 //(4*1024)
 #endif
 #include <stdlib.h>
 #include <unistd.h>

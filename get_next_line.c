@@ -79,10 +79,12 @@ int		check_reader(char **line, char **remain, int reader)
 			free(*remain);
 			return (-1);
 		}
+		if (*remain)
+			return (1);
 		if (!*remain)
 			return (0);
 	}
-	return ((*line = extract_first_line(remain)) ? 1 : -1);	
+	return ((*line = extract_first_line(remain)) ? 1 : -1);
 }
 
 char	*join_and_always_free_first(char *str1, char *str2)
