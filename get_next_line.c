@@ -96,20 +96,14 @@ int		check_reader(char **line, char **remain, int reader)
 		free(*remain);
 		return (-1);
 	}
-	if (reader == 0)
+	if (!(*line = extract_first_line(remain))) 
 	{
-		if (!(*line = extract_first_line(remain)))
-		{
-			free(*remain);
-			return (-1);
-		}
-		if (*remain)
-			return (1);
-		if (!*remain)
-			return (0);
+		free(*remain);
+		return (-1);
 	}
-	return ((*line = extract_first_line(remain)) ? 1 : -1);
+	return ((reader == 0 && !*remain) ? 0 : 1);	
 }
+
 
 char	*join_and_always_free_first(char *str1, char *str2)
 {
@@ -129,8 +123,8 @@ int		get_next_line(int fd, char **line)
 	if (!line || BUFFER_SIZE < 1 || fd < 0)
 		return (-1);
 	flag = 0;
-	
-	while ((reader = read(fd, buffer, BUFFER_SIZE)) > 0)
+	reader = 0;
+	while (!ft_strchr(remain, '\n') && (reader = read(fd, buffer, BUFFER_SIZE)) > 0)
 	{
 		buffer[reader] = '\0';
 		if (!(remain = join_and_always_free_first(remain, buffer)))
