@@ -118,20 +118,15 @@ int		get_next_line(int fd, char **line)
 	char			buffer[BUFFER_SIZE + 1];
 	static	char	*remain = NULL;
 	int				reader;
-	int				flag;
 
 	if (!line || BUFFER_SIZE < 1 || fd < 0)
 		return (-1);
-	flag = 0;
 	reader = 0;
 	while (!ft_strchr(remain, '\n') && (reader = read(fd, buffer, BUFFER_SIZE)) > 0)
 	{
 		buffer[reader] = '\0';
 		if (!(remain = join_and_always_free_first(remain, buffer)))
 			return (-1);
-		if (flag == 1)
-			break;
-		flag = ((ft_strchr(remain, '\n')) ? 1 : 0);
 	}
 	return (check_reader(line, &remain, reader));
 }
