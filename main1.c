@@ -1,24 +1,31 @@
-// #include "get_next_line.h"
+#include "get_next_line.h"
 
-// int	main(int argc, char**argv)
-// {
-// 	char	*line;
-// 	int		fd = argc > 1 ? open(argv[1], O_RDONLY) : 0;
-// 	int		status;
-// 	char buffer[1024];
+int	main(int argc, char**argv)
+{
+	char	*line;
+	int		fd = argc > 1 ? open(argv[1], O_RDONLY) : 0;
+	int		status;
+	char buffer[1024];
 
-// 	printf ("argv 1 = %s\n", argv[1]);
-// 	printf("fd = %d\n", fd);
+	printf ("argv 1 = %s\n", argv[1]);
+	printf("fd = %d\n", fd);
 
-// 	while ((status = get_next_line(fd, &line)) == 1)
-// 	{
-// 		printf("status = %d, line: \"%s\"\n", status, line);
-// 		free(line);
-// 	}
-// 	printf("status = %d\n", status);
-// 	close(fd);
-// 	return (0);
-//  }
+	while ((status = get_next_line(fd, &line)) == 1)
+	{
+		printf("status = %d, line: \"%s\"\n", status, line);
+		free(line);
+	}
+	if (status == 0)
+	{
+		printf("status = %d, line: \"%s\"\n", status, line);
+		free(line);
+	}
+	printf("status = %d\n", status);
+	close(fd);
+	return (0);
+ }
+
+
 
 
 // argv: [*, *, NULL]

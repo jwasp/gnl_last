@@ -36,7 +36,13 @@ char	*save_before_n(char *str)
 	return (res);
 }
 
-
+// str = malloc(1024);
+// line = extract_first_line(&str);
+// if(!line)
+// {
+//    str != NULL
+// }
+// /
 char	*extract_first_line(char **remain)
 {
 	char	*res;
@@ -46,13 +52,31 @@ char	*extract_first_line(char **remain)
 		res = ft_strdup("");
 		return (res);
 	}
-	if ((!ft_strchr(*remain, '\n') || (*(ft_strchr(*remain, '\n') + 1) == '\0')))
+	if (!ft_strchr(*remain, '\n'))
 	{
-		res = save_before_n(*remain);
+		if (!(res = save_before_n(*remain)))
+			return (NULL);
 		free(*remain);
 		*remain = NULL;
 		return (res);
 	}
+	// if (*(ft_strchr(*remain, '\n') + 1) == '\0') 
+	// {
+	// 	if (!(res = save_before_n(*remain)))
+	// 		return (NULL);
+	// 	tmp = *remain;
+	// 	if (!(*remain = ft_strdup("")))
+	// 	{
+	// 		free(res);
+	// 		*remain = tmp;
+	// 		return (NULL);
+	// 	}
+	// 	free(tmp);
+	// 	return (res);
+	// }
+	// "abc\n"           -> line = "abc" remain = NULL; 
+	// "abc\n"           -> line = "abc" remain = ""; 
+	// "abc\nxyz\nklj\n" -> line = "abc" remain = "xyz\nklj\n"
 	if (!(res = save_before_n(*remain)))
 		return (NULL);
 	tmp = *remain;
@@ -105,6 +129,7 @@ int		get_next_line(int fd, char **line)
 	if (!line || BUFFER_SIZE < 1 || fd < 0)
 		return (-1);
 	flag = 0;
+	
 	while ((reader = read(fd, buffer, BUFFER_SIZE)) > 0)
 	{
 		buffer[reader] = '\0';
