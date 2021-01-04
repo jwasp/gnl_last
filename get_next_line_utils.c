@@ -1,16 +1,21 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   get_next_line_utils.c                              :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
 /*   By: jwasp <jwasp@student.42.fr>                +#+  +:+       +#+        */
- /*                                                +#+#+#+#+#+   +#+           */
- /*   Created: 2020/12/18 15:18:04 by jwasp             #+#    #+#             */
- /*   Updated: 2020/12/18 15:27:53 by jwasp            ###   ########.fr       */
- /*   Updated: 2020/12/21 21:47:56 by jwasp            ###   ########.fr       */
- /*                                                                            */
- /* ************************************************************************** */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2021/01/04 17:35:51 by jwasp             #+#    #+#             */
+/*   Updated: 2021/01/04 17:38:34 by jwasp            ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
 
 #include "get_next_line.h"
 
 size_t	ft_strlen(const char *str)
 {
 	size_t	i;
+
 	if (!str)
 		return (0);
 	i = 0;
@@ -25,6 +30,7 @@ char	*ft_strjoin(char const *s1, char const *s2)
 	size_t	len_s1;
 	size_t	len_s2;
 	size_t	i;
+
 	if (!s1 || !s2)
 		return (NULL);
 	i = 0;
@@ -46,10 +52,12 @@ char	*ft_strjoin(char const *s1, char const *s2)
 	sumstr[i] = '\0';
 	return (sumstr);
 }
+
 char	*ft_strdup(const char *src)
 {
 	size_t	i;
 	char	*dest;
+
 	i = 0;
 	while (src[i])
 		i++;
@@ -64,10 +72,11 @@ char	*ft_strdup(const char *src)
 		dest[i] = src[i];
 		i++;
 	}
- 	dest[i] = '\0';
- 	return (dest);
- }
- char*	ft_strchr(char *str, int ch)
+	dest[i] = '\0';
+	return (dest);
+}
+
+char	*ft_strchr(char *str, int ch)
 {
 	if (!str)
 		return (NULL);
