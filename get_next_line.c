@@ -44,16 +44,14 @@ char	*extract_first_line(char **remain)
 		res = ft_strdup("");
 		return (res);
 	}
+	if (!(res = save_before_n(*remain)))
+		return (NULL);
 	if (!ft_strchr(*remain, '\n'))
 	{
-		if (!(res = save_before_n(*remain)))
-			return (NULL);
 		free(*remain);
 		*remain = NULL;
 		return (res);
 	}
-	if (!(res = save_before_n(*remain)))
-		return (NULL);
 	tmp = *remain;
 	if (!(*remain = ft_strdup(ft_strchr(tmp, '\n') + 1)))
 	{
@@ -67,12 +65,7 @@ char	*extract_first_line(char **remain)
 
 int		check_reader(char **line, char **remain, int reader)
 {
-	if (reader < 0)
-	{
-		free(*remain);
-		return (-1);
-	}
-	if (!(*line = extract_first_line(remain)))
+	if (reader < 0 || !(*line = extract_first_line(remain)))
 	{
 		free(*remain);
 		return (-1);
